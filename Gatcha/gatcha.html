@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Gacha</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f0f14;
+    --surface:  #1a1a24;
+    --surface2: #22223a;
+    --border:   rgba(255,255,255,0.08);
+    --border2:  rgba(255,255,255,0.15);
+    --text:     #e8e8f0;
+    --muted:    #888899;
+    --gem:      #a78bfa;
+
+    --r1-color: #6b7280;
+    --r1-glow:  rgba(107,114,128,0.3);
+    --r2-color: #3b82f6;
+    --r2-glow:  rgba(59,130,246,0.35);
+    --r3-color: #a855f7;
+    --r3-glow:  rgba(168,85,247,0.4);
+    --r4-color: #f59e0b;
+    --r4-glow:  rgba(245,158,11,0.5);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    max-width: 860px;
+    padding: 1.5rem 1rem 0;
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .gem-display {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gem);
+  }
+
+  .gem-dot {
+    width: 12px; height: 12px;
+    background: var(--gem);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--gem);
+  }
+
+  main {
+    width: 100%;
+    max-width: 860px;
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    letter-spacing: 0.03em;
+    margin-bottom: -1px;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--gem); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Pull panel */
+  .pull-center { text-align: center; padding: 1rem 0 0.5rem; }
+
+  .pity-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 420px;
+    margin: 0 auto 1.5rem;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .pity-track {
+    flex: 1;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .pity-fill {
+    height: 100%;
+    background: var(--gem);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 6px var(--gem);
+  }
+
+  .pull-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .pull-btn {
+    padding: 12px 28px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    min-width: 130px;
+  }
+
+  .pull-btn:hover { background: var(--surface2); border-color: var(--gem); }
+  .pull-btn:active { transform: scale(0.97); }
+
+  .pull-btn .cost {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--gem);
+    margin-top: 3px;
+  }
+
+  .free-btn {
+    padding: 12px 20px;
+    background: none;
+    border: 1px dashed var(--border2);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    min-width: 120px;
+  }
+
+  .free-btn:hover { color: var(--text); border-color: var(--gem); }
+  .free-btn .cost { display: block; font-size: 11px; color: var(--gem); margin-top: 3px; }
+
+  /* Result area */
+  .result-area {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .result-hint {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .result-cards {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: floatIn 0.35s ease both;
+  }
+
+  .result-note {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Cards */
+  .card {
+    width: 300px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.15s;
+    cursor: default;
+  }
+
+  .card:hover { transform: translateY(-3px); }
+
+  .card-img-wrap {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: var(--surface2);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .card-img-wrap .card-fallback {
+    font-size: 36px;
+    line-height: 1;
+    position: absolute;
+  }
+
+  .card-img-wrap img.loaded + .card-fallback { display: none; }
+
+  .card-footer {
+    padding: 7px 8px 8px;
+  }
+
+  .card-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .rarity-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .r1 .rarity-bar { background: var(--r1-color); }
+  .r2 .rarity-bar { background: var(--r2-color); box-shadow: 0 0 6px var(--r2-glow); }
+  .r3 .rarity-bar { background: var(--r3-color); box-shadow: 0 0 8px var(--r3-glow); }
+  .r4 .rarity-bar { background: var(--r4-color); box-shadow: 0 0 10px var(--r4-glow); }
+
+  .r2 .card-img-wrap { background: linear-gradient(180deg, #1a1a24 60%, #0d1a33); }
+  .r3 .card-img-wrap { background: linear-gradient(180deg, #1a1a24 60%, #1a0d2e); }
+  .r4 .card-img-wrap { background: linear-gradient(180deg, #1a1a24 55%, #2a1a00); }
+
+  .rarity-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .r1 .rarity-badge { background: rgba(107,114,128,0.7); color: #e5e7eb; }
+  .r2 .rarity-badge { background: rgba(59,130,246,0.7); color: #bfdbfe; }
+  .r3 .rarity-badge { background: rgba(168,85,247,0.7); color: #e9d5ff; }
+  .r4 .rarity-badge { background: rgba(245,158,11,0.75); color: #fef3c7; }
+
+  .new-badge {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(16,185,129,0.8);
+    color: #d1fae5;
+    letter-spacing: 0.04em;
+  }
+
+  .dupe-badge {
+    position: absolute;
+    bottom: 26px;
+    right: 5px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.6);
+    color: var(--muted);
+  }
+
+  /* Card pool & gallery grids */
+  .section-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .section-info { font-size: 13px; color: var(--muted); }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: none;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { color: var(--text); border-color: var(--border2); }
+  .filter-btn.active { border-color: var(--gem); color: var(--gem); }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .pool-card-owned .card-img-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(16,185,129,0.1);
+  }
+
+  .owned-check {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 16px; height: 16px;
+    background: rgba(16,185,129,0.85);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #d1fae5;
+    font-weight: 700;
+  }
+
+  .drop-rate {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 500px) {
+    .card { width: 88px; }
+    .cards-grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✦ Gacha</h1>
+  <div class="gem-display">
+    <div class="gem-dot"></div>
+    <span id="gems-display">1000</span> gems
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('pull')">Pull</button>
+    <button class="tab" onclick="showTab('pool')">Card Pool <span id="pool-tab-count" style="opacity:0.5; font-size:12px;"></span></button>
+    <button class="tab" onclick="showTab('gallery')">Gallery <span id="gallery-tab-count" style="opacity:0.5; font-size:12px;"></span></button>
+  </div>
+
+  <!-- Pull Panel -->
+  <div id="tab-pull" class="panel active">
+    <div class="pull-center">
+      <div class="pity-row">
+        <span>Pity: <span id="pity-num">0</span>/90</span>
+        <div class="pity-track"><div class="pity-fill" id="pity-fill" style="width:0%"></div></div>
+        <span>✦✦✦✦ guaranteed at 90</span>
+      </div>
+      <div class="pull-btns">
+        <button class="pull-btn" onclick="doPull(1)">Pull ×1<span class="cost">◆ 160 gems</span></button>
+        <button class="pull-btn" onclick="doPull(10)">Pull ×10<span class="cost">◆ 1600 gems</span></button>
+        <button class="free-btn" onclick="addGems()">+ Free Gems<span class="cost">+500</span></button>
+      </div>
+      <div class="result-area" id="result-area">
+        <p class="result-hint">Pull to discover new cards</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pool Panel -->
+  <div id="tab-pool" class="panel">
+    <div class="section-bar">
+      <span class="section-info">All <strong id="pool-total"></strong> cards · hover for drop rate</span>
+      <div class="filter-row" id="pool-filters"></div>
+    </div>
+    <div class="cards-grid" id="pool-grid"></div>
+  </div>
+
+  <!-- Gallery Panel -->
+  <div id="tab-gallery" class="panel">
+    <div class="section-bar">
+      <span class="section-info" id="gallery-info">Cards you've collected</span>
+      <div class="filter-row" id="gallery-filters"></div>
+    </div>
+    <div id="gallery-content"></div>
+  </div>
+</main>
+
+<script>
+/*
+  Card images are loaded from:   cards/<card-id>.png
+  Place your image files in a folder called "cards/" in the same directory as this HTML file.
+  Supported formats: .png  (change IMG_EXT below for .jpg or .webp)
+  If an image is missing, the emoji fallback is shown automatically.
+
+  Example file structure:
+    gacha.html
+    cards/
+      c1.png
+      c2.png
+      ...
+      c24.png
+*/
+
+const IMG_EXT = '.jpeg';
+const IMG_FOLDER = 'cards/';
+
+const CARDS = [
+  { id:'c1',  name:'Peasant Conscript',     cls:'Warrior', rarity:1, icon:'⚔️',  rate:0.45  },
+  { id:'c2',  name:'Fern Witch',       cls:'Mage',    rarity:1, icon:'🌿',  rate:0.45  },
+  { id:'c3',  name:'Sand Rogue',       cls:'Rogue',   rarity:1, icon:'🏜️',  rate:0.45  },
+  { id:'c4',  name:'Stone Guard',      cls:'Tank',    rarity:1, icon:'🪨',  rate:0.45  },
+  { id:'c5',  name:'Mud Golem',        cls:'Warrior', rarity:1, icon:'🪣',  rate:0.45  },
+  { id:'c6',  name:'Cinder Fox',       cls:'Archer',   rarity:1, icon:'🦊',  rate:0.45  },
+  { id:'c7',  name:'River Sage',       cls:'Mage',    rarity:1, icon:'🌊',  rate:0.45  },
+  { id:'c8',  name:'Veil Monk',        cls:'Healer',  rarity:1, icon:'🧘',  rate:0.45  },
+  { id:'c9',  name:'Iron Ranger',      cls:'Archer',  rarity:2, icon:'🏹',  rate:0.11  },
+  { id:'c10', name:'Frost Oracle',     cls:'Mage',    rarity:2, icon:'❄️',  rate:0.11  },
+  { id:'c11', name:'Ember Drake',      cls:'Warrior', rarity:2, icon:'🔥',  rate:0.11  },
+  { id:'c12', name:'Moon Dancer',      cls:'Rogue',   rarity:2, icon:'🌙',  rate:0.11  },
+  { id:'c13', name:'Tide Warden',      cls:'Tank',    rarity:2, icon:'🌊',  rate:0.11  },
+  { id:'c14', name:'Storm Herald',     cls:'Mage',    rarity:2, icon:'⚡',  rate:0.11  },
+  { id:'c15', name:'Bloom Priestess',  cls:'Healer',  rarity:2, icon:'🌸',  rate:0.11  },
+  { id:'c16', name:'Void Stalker',     cls:'Archer',  rarity:3, icon:'🌑',  rate:0.04  },
+  { id:'c17', name:'Crystal Sage',     cls:'Mage',    rarity:3, icon:'💎',  rate:0.04  },
+  { id:'c18', name:'Phantom Blade',    cls:'Warrior',   rarity:3, icon:'🗡️',  rate:0.04  },
+  { id:'c19', name:'Sun Paladin',      cls:'Tank',    rarity:3, icon:'☀️',  rate:0.04  },
+  { id:'c20', name:'Gale Huntress',    cls:'Archer',  rarity:3, icon:'💨',  rate:0.04  },
+  { id:'c21', name:'Obsidian Dragon',  cls:'Warrior', rarity:4, icon:'🐉',  rate:0.006 },
+  { id:'c22', name:'Celestial Witch',  cls:'Mage',    rarity:4, icon:'✨',  rate:0.006 },
+  { id:'c23', name:'Abyssal Reaper',   cls:'Rogue',   rarity:4, icon:'💀',  rate:0.006 },
+  { id:'c24', name:'Aurora Seraph',    cls:'Healer',  rarity:4, icon:'👼',  rate:0.006 },
+];
+
+const RARITY_STARS = { 1:'✦', 2:'✦✦', 3:'✦✦✦', 4:'✦✦✦✦' };
+
+let gems = 1000, pity = 0, gallery = {};
+let poolFilter = 'all', galleryFilter = 'all';
+
+function imgSrc(id) { return IMG_FOLDER + id + IMG_EXT; }
+
+function cardImgWrap(card) {
+  return `<div class="card-img-wrap">
+    <img src="${imgSrc(card.id)}" alt="${card.name}" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+    <div class="card-fallback">${card.icon}</div>
+  </div>`;
+}
+
+function cardEl(card, opts = {}) {
+  const { isNew = false, count = 0, showRate = false, ownedCheck = false } = opts;
+  const rarityClass = 'r' + card.rarity;
+  return `<div class="card ${rarityClass}${ownedCheck ? ' pool-card-owned' : ''}" title="${card.name}${showRate ? ' · ' + (card.rate * 100).toFixed(1) + '% rate' : ''}">
+    ${cardImgWrap(card)}
+    <span class="rarity-badge">${RARITY_STARS[card.rarity]}</span>
+    ${isNew ? `<span class="new-badge">NEW</span>` : ''}
+    ${count > 1 ? `<span class="dupe-badge">×${count}</span>` : ''}
+    ${ownedCheck ? `<span class="owned-check">✓</span>` : ''}
+    <div class="rarity-bar"></div>
+    <div class="card-footer">
+      <div class="card-name">${card.name}</div>
+      <div class="card-sub">${card.cls}</div>
+      ${showRate ? `<div class="drop-rate">${(card.rate * 100).toFixed(1)}%</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function weightedPull() {
+  pity++;
+  if (pity >= 90) {
+    pity = 0;
+    const pool = CARDS.filter(c => c.rarity === 4);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  const roll = Math.random();
+  let pool;
+  if      (roll < 0.016) pool = CARDS.filter(c => c.rarity === 4);
+  else if (roll < 0.08)  pool = CARDS.filter(c => c.rarity === 3);
+  else if (roll < 0.35)  pool = CARDS.filter(c => c.rarity === 2);
+  else                   pool = CARDS.filter(c => c.rarity === 1);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function doPull(n) {
+  const cost = n * 160;
+  if (gems < cost) { alert('Not enough gems — grab some free ones!'); return; }
+  gems -= cost;
+  document.getElementById('gems-display').textContent = gems;
+
+  const pulled = [];
+  for (let i = 0; i < n; i++) pulled.push(weightedPull());
+  pulled.forEach(c => { gallery[c.id] = (gallery[c.id] || 0) + 1; });
+
+  updatePity();
+  updateCounts();
+  showResults(pulled);
+}
+
+function addGems() {
+  gems += 500;
+  document.getElementById('gems-display').textContent = gems;
+}
+
+function updatePity() {
+  document.getElementById('pity-num').textContent = pity;
+  document.getElementById('pity-fill').style.width = Math.round(pity / 90 * 100) + '%';
+}
+
+function updateCounts() {
+  const owned = Object.keys(gallery).length;
+  document.getElementById('pool-tab-count').textContent = CARDS.length;
+  document.getElementById('gallery-tab-count').textContent = owned || '';
+}
+
+function showResults(pulled) {
+  const newCards = pulled.filter(c => gallery[c.id] === 1);
+  const html = pulled.map(c => cardEl(c, { isNew: gallery[c.id] === 1 })).join('');
+  document.getElementById('result-area').innerHTML =
+    `<div class="result-cards">${html}</div>
+     <p class="result-note">${newCards.length ? newCards.length + ' new card' + (newCards.length > 1 ? 's' : '') + ' added to gallery' : 'All duplicates'}</p>`;
+}
+
+function showTab(t) {
+  document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', ['pull','pool','gallery'][i] === t));
+  document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  if (t === 'pool') renderPool();
+  if (t === 'gallery') renderGallery();
+}
+
+function buildFilters(containerId, current, setter) {
+  const rarities = [1,2,3,4];
+  document.getElementById(containerId).innerHTML =
+    ['all', ...rarities].map(r =>
+      `<button class="filter-btn${current === (r === 'all' ? 'all' : r) ? ' active' : ''}" onclick="${setter}('${r}')">${r === 'all' ? 'All' : RARITY_STARS[r]}</button>`
+    ).join('');
+}
+
+function renderPool() {
+  document.getElementById('pool-total').textContent = CARDS.length;
+  buildFilters('pool-filters', poolFilter, 'setPoolFilter');
+  const filtered = poolFilter === 'all' ? CARDS : CARDS.filter(c => c.rarity == poolFilter);
+  document.getElementById('pool-grid').innerHTML =
+    filtered.map(c => cardEl(c, { showRate: true, ownedCheck: !!gallery[c.id] })).join('');
+}
+
+function setPoolFilter(f) {
+  poolFilter = f === 'all' ? 'all' : Number(f);
+  renderPool();
+}
+
+function renderGallery() {
+  const owned = CARDS.filter(c => gallery[c.id]);
+  buildFilters('gallery-filters', galleryFilter, 'setGalleryFilter');
+  const filtered = galleryFilter === 'all' ? owned : owned.filter(c => c.rarity == galleryFilter);
+  const gc = document.getElementById('gallery-content');
+  if (!owned.length) {
+    gc.innerHTML = `<div class="empty-state"><div class="icon">🃏</div>No cards yet — start pulling!</div>`;
+  } else {
+    gc.innerHTML = `<div class="cards-grid">${filtered.map(c => cardEl(c, { count: gallery[c.id] })).join('')}</div>`;
+  }
+  document.getElementById('gallery-info').textContent =
+    owned.length ? `${owned.length} of ${CARDS.length} cards collected` : 'Cards you\'ve collected';
+}
+
+updateCounts();
+</script>
+</body>
+</html>
