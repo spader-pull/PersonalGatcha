@@ -108,6 +108,26 @@
   .panel.active { display: block; }
 
   /* Pull panel */
+  .pull-layout {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .pull-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pull-right {
+    width: 178px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1rem;
+  }
+
   .pull-center { text-align: center; padding: 1rem 0 0.5rem; }
 
   .pity-row {
@@ -192,6 +212,116 @@
     justify-content: center;
   }
 
+  .result-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 158px);
+    gap: 14px;
+    justify-content: center;
+  }
+
+  .result-cards .flip-card:nth-child(4) { grid-column: 1; justify-self: end; }
+  .result-cards .flip-card:nth-child(5) { grid-column: 2; justify-self: start; }
+
+  /* Card stack */
+  .card-stack {
+    position: relative;
+    width: 158px;
+    height: 211px;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+
+  .card-stack:hover .stack-card:last-child { transform: translateY(-6px) rotate(0deg); }
+
+  .stack-card {
+    position: absolute;
+    width: 158px;
+    height: 211px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    transition: transform 0.2s ease;
+    backface-visibility: hidden;
+  }
+
+  .stack-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .stack-card .stack-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(167,139,250,0.06) 0px,
+      rgba(167,139,250,0.06) 2px,
+      transparent 2px,
+      transparent 10px
+    );
+  }
+
+  .stack-card img.loaded + .stack-fallback { display: none; }
+
+  .stack-card:nth-child(1) { transform: rotate(-4deg) translateY(6px); }
+  .stack-card:nth-child(2) { transform: rotate(-2deg) translateY(3px); }
+  .stack-card:nth-child(3) { transform: rotate(0deg) translateY(0px); }
+
+  .stack-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  /* Flying card animation */
+  .flying-card {
+    position: fixed;
+    width: 158px;
+    height: 211px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    pointer-events: none;
+    z-index: 200;
+    backface-visibility: hidden;
+  }
+
+  .flying-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .flying-card .stack-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(167,139,250,0.06) 0px,
+      rgba(167,139,250,0.06) 2px,
+      transparent 2px,
+      transparent 10px
+    );
+  }
+
+  .flying-card img.loaded + .stack-fallback { display: none; }
+
   .result-hint {
     color: var(--muted);
     font-size: 14px;
@@ -206,11 +336,103 @@
   }
 
   .result-cards .card {
-    width: 140px;
+    width: 158px;
   }
 
   .result-cards .card-name { font-size: 13px; }
   .result-cards .card-sub  { font-size: 11px; }
+
+  /* Flip card animation */
+  .flip-card {
+    width: 158px;
+    aspect-ratio: 3/4;
+    perspective: 800px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .flip-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateY(180deg);
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .flip-card-inner.flipped {
+    transform: rotateY(0deg);
+  }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .flip-card-back {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    transform: rotateY(180deg);
+    overflow: hidden;
+  }
+
+  .flip-card-back img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .flip-card-back .flip-card-back-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+  }
+
+  .flip-card-back img.loaded + .flip-card-back-fallback { display: none; }
+
+  .flip-card-back-emblem {
+    font-size: 42px;
+    filter: drop-shadow(0 0 12px rgba(167,139,250,0.6));
+  }
+
+  .flip-card-back-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gem);
+  }
+
+  .flip-card-front {
+    transform: rotateY(0deg);
+  }
+
+  @keyframes shimmer {
+    0%   { box-shadow: 0 0 0px transparent; }
+    50%  { box-shadow: 0 0 20px var(--rarity-glow, rgba(167,139,250,0.5)); }
+    100% { box-shadow: 0 0 0px transparent; }
+  }
+
+  .flip-card-inner.flipped .flip-card-front {
+    animation: shimmer 0.8s ease 0.45s both;
+  }
 
   .result-note {
     margin-top: 12px;
@@ -435,28 +657,36 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.75);
+    background: rgba(0,0,0,0.85);
     z-index: 100;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
-    backdrop-filter: blur(4px);
+    padding: 1.5rem;
+    backdrop-filter: blur(6px);
   }
 
   .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
 
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    max-width: 720px;
-    width: 100%;
-    overflow: hidden;
     position: relative;
-    animation: slideUp 0.25s ease;
-    display: flex;
-    flex-direction: row;
     max-height: 90vh;
+    max-width: 420px;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    animation: slideUp 0.25s ease;
+    box-shadow: 0 0 60px rgba(0,0,0,0.8);
+    border: 3px solid transparent;
+  }
+
+  .modal.border-r1 { border-color: var(--r1-color); box-shadow: 0 0 30px var(--r1-glow), 0 0 60px rgba(0,0,0,0.8); }
+  .modal.border-r2 { border-color: var(--r2-color); box-shadow: 0 0 30px var(--r2-glow), 0 0 60px rgba(0,0,0,0.8); }
+  .modal.border-r3 { border-color: var(--r3-color); box-shadow: 0 0 35px var(--r3-glow), 0 0 60px rgba(0,0,0,0.8); }
+  .modal.border-r4 { border-color: var(--r4-color); box-shadow: 0 0 40px var(--r4-glow), 0 0 60px rgba(0,0,0,0.8); }
+  .modal.border-r5 {
+    border-image: linear-gradient(135deg, #a78bfa, #fff, #f59e0b, #a78bfa) 1;
+    border-radius: 16px;
+    box-shadow: 0 0 50px rgba(167,139,250,0.5), 0 0 80px rgba(245,158,11,0.3), 0 0 60px rgba(0,0,0,0.8);
   }
 
   @keyframes slideUp {
@@ -464,139 +694,76 @@
     to   { opacity: 1; transform: none; }
   }
 
-  .modal-img-col {
-    width: 280px;
-    flex-shrink: 0;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .modal-img-wrap {
-    flex: 1;
-    background: var(--surface2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    min-height: 0;
-  }
-
-  .modal-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top center;
-    display: block;
-  }
-
-  .modal-img-wrap .modal-fallback {
-    font-size: 100px;
-    line-height: 1;
-    position: absolute;
-  }
-
-  .modal-img-wrap img.loaded + .modal-fallback { display: none; }
-
-  .modal-rarity-bar {
-    height: 4px;
-    width: 100%;
-    flex-shrink: 0;
-  }
-
-  .modal-info-col {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.25rem 1.5rem 1.5rem;
-    min-width: 0;
-  }
-
-  .modal-body { }
-
-  .modal-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    gap: 1rem;
-    padding-right: 1.5rem;
-  }
-
-  .modal-title { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; }
-  .modal-cls   { font-size: 13px; color: var(--muted); margin-top: 3px; }
-
-  .modal-stars { font-size: 13px; letter-spacing: 2px; white-space: nowrap; }
-  .modal-stars.r1 { color: var(--r1-color); }
-  .modal-stars.r2 { color: var(--r2-color); }
-  .modal-stars.r3 { color: var(--r3-color); }
-  .modal-stars.r4 { color: var(--r4-color); }
-  .modal-stars.r5 { background: linear-gradient(90deg,#a78bfa,#fff,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-
-  .modal-desc {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 1rem;
-    border-left: 2px solid var(--border2);
-    padding-left: 10px;
-    font-style: italic;
-  }
-
-  .modal-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 1rem;
-  }
-
-  .stat-box {
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 8px 10px;
-    text-align: center;
-  }
-
-  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-  .stat-value { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 2px; }
-
-  .stat-bar-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-
-  .stat-bar-label { font-size: 11px; color: var(--muted); width: 52px; flex-shrink: 0; }
-  .stat-bar-track { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-  .stat-bar-fill  { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
-  .stat-bar-num   { font-size: 11px; color: var(--text); width: 28px; text-align: right; flex-shrink: 0; }
-
   .modal-close {
     position: absolute;
-    top: 10px; right: 10px;
-    width: 28px; height: 28px;
-    background: rgba(0,0,0,0.5);
+    top: 12px; right: 12px;
+    width: 32px; height: 32px;
+    background: rgba(0,0,0,0.6);
     border: none;
     border-radius: 50%;
     color: var(--text);
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     line-height: 1;
     z-index: 10;
   }
 
-  .modal-close:hover { background: rgba(255,255,255,0.1); }
+  .modal-close:hover { background: rgba(255,255,255,0.15); }
 
-  .modal-rate { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; }
+  .modal-img-wrap {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative;
+    background: var(--surface2);
+  }
 
-  @media (max-width: 580px) {
-    .modal { flex-direction: column; max-height: 92vh; }
-    .modal-img-col { width: 100%; height: 220px; }
-    .modal-img-wrap { height: 100%; }
-    .modal-info-col { padding: 1rem; }
-    .modal-header { padding-right: 2rem; }
+  .modal-img-wrap img {
+    width: 100%;
+    display: block;
+    max-height: 90vh;
+    object-fit: contain;
+  }
+
+  .modal-img-wrap .modal-fallback {
+    font-size: 140px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 0;
+  }
+
+  .modal-img-wrap img.loaded + .modal-fallback { display: none; }
+
+  .modal-footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 2rem 1.25rem 1.25rem;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .modal-title { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .modal-cls   { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+  .modal-stars { font-size: 14px; letter-spacing: 2px; }
+  .modal-stars.r1 { color: var(--r1-color); }
+  .modal-stars.r2 { color: var(--r2-color); }
+  .modal-stars.r3 { color: var(--r3-color); }
+  .modal-stars.r4 { color: var(--r4-color); }
+  .modal-stars.r5 { background: linear-gradient(90deg,#a78bfa,#fff,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+  .modal-rarity-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  @media (max-width: 480px) {
+    .modal { max-width: 100%; }
   }
 </style>
 </head>
@@ -614,23 +781,15 @@
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
   <div class="modal" id="modal-box">
     <button class="modal-close" onclick="closeModal(null)">✕</button>
-    <div class="modal-img-col">
-      <div class="modal-img-wrap" id="modal-img-wrap"></div>
-      <div class="modal-rarity-bar" id="modal-rarity-bar"></div>
-    </div>
-    <div class="modal-info-col">
-      <div class="modal-header">
-        <div>
-          <div class="modal-title" id="modal-title"></div>
-          <div class="modal-cls"  id="modal-cls"></div>
-        </div>
-        <div class="modal-stars" id="modal-stars"></div>
+    <div class="modal-img-wrap" id="modal-img-wrap"></div>
+    <div class="modal-footer">
+      <div>
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-cls" id="modal-cls"></div>
       </div>
-      <div class="modal-desc" id="modal-desc"></div>
-      <div class="modal-stats" id="modal-stats"></div>
-      <div id="modal-bars"></div>
-      <div class="modal-rate" id="modal-rate"></div>
+      <div class="modal-stars" id="modal-stars"></div>
     </div>
+    <div class="modal-rarity-bar" id="modal-rarity-bar"></div>
   </div>
 </div>
 
@@ -643,19 +802,40 @@
 
   <!-- Pull Panel -->
   <div id="tab-pull" class="panel active">
-    <div class="pull-center">
-      <div class="pity-row">
-        <span>Pity: <span id="pity-num">0</span>/90</span>
-        <div class="pity-track"><div class="pity-fill" id="pity-fill" style="width:0%"></div></div>
-        <span>✦✦✦✦ guaranteed at 90</span>
+    <div class="pull-layout">
+      <div class="pull-left">
+        <div class="pull-center">
+          <div class="pity-row">
+            <span>Pity: <span id="pity-num">0</span>/90</span>
+            <div class="pity-track"><div class="pity-fill" id="pity-fill" style="width:0%"></div></div>
+            <span>✦✦✦✦ guaranteed at 90</span>
+          </div>
+          <div class="pull-btns">
+            <button class="pull-btn" onclick="doPull(1)">Pull ×1<span class="cost">◆ 160 gems</span></button>
+            <button class="pull-btn" onclick="doPull(5)">Pull ×5<span class="cost">◆ 800 gems</span></button>
+            <button class="free-btn" onclick="addGems()">+ Free Gems<span class="cost">+500</span></button>
+          </div>
+          <div class="result-area" id="result-area">
+            <p class="result-hint">Pull to discover new cards</p>
+          </div>
+        </div>
       </div>
-      <div class="pull-btns">
-        <button class="pull-btn" onclick="doPull(1)">Pull ×1<span class="cost">◆ 160 gems</span></button>
-        <button class="pull-btn" onclick="doPull(10)">Pull ×10<span class="cost">◆ 1600 gems</span></button>
-        <button class="free-btn" onclick="addGems()">+ Free Gems<span class="cost">+500</span></button>
-      </div>
-      <div class="result-area" id="result-area">
-        <p class="result-hint">Pull to discover new cards</p>
+      <div class="pull-right">
+        <div class="card-stack" id="card-stack">
+          <div class="stack-card">
+            <img src="cards/c-back.jpeg" alt="Card back" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+            <div class="stack-fallback"><span style="font-size:36px;filter:drop-shadow(0 0 10px rgba(167,139,250,0.6))">✦</span></div>
+          </div>
+          <div class="stack-card">
+            <img src="cards/c-back.jpeg" alt="Card back" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+            <div class="stack-fallback"><span style="font-size:36px;filter:drop-shadow(0 0 10px rgba(167,139,250,0.6))">✦</span></div>
+          </div>
+          <div class="stack-card">
+            <img src="cards/c-back.jpeg" alt="Card back" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+            <div class="stack-fallback"><span style="font-size:36px;filter:drop-shadow(0 0 10px rgba(167,139,250,0.6))">✦</span></div>
+          </div>
+        </div>
+        <div class="stack-label">Card Pool</div>
       </div>
     </div>
   </div>
@@ -696,7 +876,7 @@
 */
 
 const IMG_EXT = '.jpeg';
-const IMG_FOLDER = 'Cards-v2/';
+const IMG_FOLDER = 'cards/';
 
 const CARDS = [
   { id:'c1',  name:'Marta',            cls:'Warrior', rarity:1, icon:'⚔️',  rate:0.45  },
@@ -739,57 +919,6 @@ const CARDS = [
 
 const RARITY_STARS = { 1:'✦', 2:'✦✦', 3:'✦✦✦', 4:'✦✦✦✦', 5:'✦✦✦✦✦' };
 
-const CARD_DESC = {
-  c1:  "A sturdy farmhand who took up the sword after her village was raided. She fights with stubborn resolve and little grace.",
-  c2:  "Broad-shouldered and quick-tempered, Berta once felled an ox with a single punch. The sword was her second choice.",
-  c3:  "Quiet and methodical, Ilse spent years chopping wood before she ever swung a blade in anger.",
-  c4:  "Gunna grew up hunting in the hill forests, able to loose three arrows before most soldiers draw one.",
-  c5:  "Frieda's arrows rarely miss — a fact she attributes to patience, and others to sheer stubbornness.",
-  c6:  "Willa learned to shoot raiding parties off her family's roof. She's been shooting ever since.",
-  c7:  "Nessa moves through crowds like smoke, lifting purses and leaving no trace. She insists she's retired.",
-  c8:  "Tilda's nimble fingers and quiet feet have kept her alive in places where noise means death.",
-  c9:  "Odra mutters spells under her breath while she works, though she'll deny it if asked. Her herbs do help, at least.",
-  c10: "Edda earned her stripes breaking up a bar fight that leveled half a garrison. The other half promoted her.",
-  c11: "Maud is dependable to a fault — always the last to retreat and first to complain about it afterward.",
-  c12: "Hilda has held a shield wall alone long enough for her unit to regroup more times than she can count.",
-  c13: "Lena scouts ahead with quick feet and quicker eyes, reporting back before the enemy knows she was there.",
-  c14: "Britta's instincts were forged in border skirmishes. She can read a tree line like most read a map.",
-  c15: "Nobody knows her real name. 'Slip' earned the nickname after vanishing from a locked prison cell.",
-  c16: "Foxglove is beautiful, charming, and mildly poisonous in all the same ways as her namesake.",
-  c17: "Cressida studied in a crumbling tower and emerged knowing three dangerous spells and no social graces.",
-  c18: "Sera tends wounds without complaint, though she quietly judges every reckless decision that caused them.",
-  c19: "Lysa has survived three expeditions that killed everyone else. She considers this good luck, not skill.",
-  c20: "Maren travels light, asks questions later, and has a map tattooed on her forearm just in case.",
-  c21: "Rhiannon has mastered every blade school she has encountered. She is now inventing her own.",
-  c22: "Isolde's arrows have felled wyverns and generals alike. She charges the same rate for both.",
-  c23: "Brynn once held a mountain pass for six days alone. She says it was boring. Everyone else calls it a legend.",
-  c24: "Vesper's spells are precise, layered, and devastating — like the woman herself.",
-  c25: "Morrigan bargained with something old and dark. Whatever she gave up, she doesn't seem to miss it.",
-  c26: "Elowen heals the broken with light and will — and carries the weight of every soul she couldn't save.",
-  c27: "Mei Xiu's fists move faster than thought. She trained until the techniques forgot they had a teacher.",
-  c28: "Lan Rong strikes once. She has never needed to strike twice.",
-  c29: "Caelindra leaves no footprints, no witnesses, and no loose ends. She is considered a myth in seven cities.",
-  c30: "Brunhilde does not lead armies. Armies form around her, drawn to the eye of the storm.",
-  c31: "Seraphine has fought in every age of war. She remembers all of them. She regrets none.",
-  c32: "Lyraniel has studied magic for three centuries. She is only now reaching the interesting parts.",
-  c33: "Vexara once held dominion over an entire plane of shadow. She finds this world quaint — but amusing.",
-  c34: "Elara rules not through decree but through the quiet certainty that the world bends toward her will.",
-  c35: "Aelindra was woven from the first light that ever fell. She neither ages nor forgets. She only waits.",
-  c36: "Noctivara is the darkness that existed before stars. She is patient in ways that outlast civilizations.",
-};
-
-// Generate consistent stats per card based on id + rarity
-function cardStats(card) {
-  const seed = card.id.replace('c','') * 1;
-  const r = card.rarity;
-  const base = 20 + r * 15;
-  const spread = 30 + r * 10;
-  const s = (offset) => Math.min(99, Math.floor(base + ((seed * (offset+7)) % spread)));
-  return {
-    ATK: s(1), DEF: s(2), SPD: s(3), MGC: s(4), LCK: s(5),
-  };
-}
-
 const RARITY_BAR_STYLE = {
   1: 'background:#6b7280',
   2: 'background:#3b82f6',
@@ -798,22 +927,18 @@ const RARITY_BAR_STYLE = {
   5: 'background:linear-gradient(90deg,#a78bfa,#fff,#f59e0b)',
 };
 
-const STAT_COLOR = {
-  1: '#6b7280', 2: '#3b82f6', 3: '#a855f7', 4: '#f59e0b', 5: '#a78bfa',
-};
-
 function openModal(cardId) {
   const card = CARDS.find(c => c.id === cardId);
   if (!card) return;
   const r = card.rarity;
-  const stats = cardStats(card);
 
-  // Image
   const imgWrap = document.getElementById('modal-img-wrap');
-  imgWrap.className = 'modal-img-wrap';
   imgWrap.innerHTML = `
     <img src="${imgSrc(card.id)}" alt="${card.name}" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
     <div class="modal-fallback">${card.icon}</div>`;
+
+  const modalBox = document.getElementById('modal-box');
+  modalBox.className = 'modal border-r' + r;
 
   document.getElementById('modal-rarity-bar').style = RARITY_BAR_STYLE[r];
   document.getElementById('modal-title').textContent = card.name;
@@ -821,25 +946,6 @@ function openModal(cardId) {
   const starsEl = document.getElementById('modal-stars');
   starsEl.textContent = RARITY_STARS[r];
   starsEl.className = 'modal-stars r' + r;
-  document.getElementById('modal-desc').textContent = CARD_DESC[card.id] || 'A mysterious figure whose past remains unwritten.';
-  document.getElementById('modal-rate').textContent = `Drop rate: ${(card.rate * 100).toFixed(2)}%`;
-
-  // Stat boxes (ATK, DEF, SPD)
-  document.getElementById('modal-stats').innerHTML =
-    ['ATK','DEF','SPD'].map(k => `
-      <div class="stat-box">
-        <div class="stat-label">${k}</div>
-        <div class="stat-value" style="color:${STAT_COLOR[r]}">${stats[k]}</div>
-      </div>`).join('');
-
-  // Stat bars (MGC, LCK)
-  document.getElementById('modal-bars').innerHTML =
-    ['MGC','LCK'].map(k => `
-      <div class="stat-bar-row">
-        <div class="stat-bar-label">${k}</div>
-        <div class="stat-bar-track"><div class="stat-bar-fill" style="${RARITY_BAR_STYLE[r]}; width:${stats[k]}%"></div></div>
-        <div class="stat-bar-num">${stats[k]}</div>
-      </div>`).join('');
 
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -910,7 +1016,115 @@ function doPull(n) {
 
   updatePity();
   updateCounts();
-  showResults(pulled);
+  animatePull(pulled);
+}
+
+function animatePull(pulled) {
+  const stack = document.getElementById('card-stack');
+  const stackRect = stack.getBoundingClientRect();
+  const ra = document.getElementById('result-area');
+  const raRect = ra.getBoundingClientRect();
+
+  // Clear result area and disable buttons during animation
+  ra.innerHTML = '';
+  document.querySelectorAll('.pull-btn, .free-btn').forEach(b => b.disabled = true);
+
+  const total = pulled.length;
+  const flyDuration = 380; // ms per card flight
+  const delay = total === 1 ? 0 : 160; // stagger
+
+  pulled.forEach((card, i) => {
+    setTimeout(() => {
+      // Create flying card element
+      const fly = document.createElement('div');
+      fly.className = 'flying-card';
+      fly.style.cssText = `
+        left: ${stackRect.left}px;
+        top: ${stackRect.top}px;
+        transition: left ${flyDuration}ms cubic-bezier(0.25,0.46,0.45,0.94),
+                    top ${flyDuration}ms cubic-bezier(0.25,0.46,0.45,0.94),
+                    opacity ${flyDuration * 0.3}ms ease ${flyDuration * 0.7}ms;
+      `;
+      fly.innerHTML = `
+        <img src="${IMG_FOLDER}c-back${IMG_EXT}" alt="Card back" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+        <div class="stack-fallback"><span style="font-size:36px;filter:drop-shadow(0 0 10px rgba(167,139,250,0.6))">✦</span></div>`;
+      document.body.appendChild(fly);
+
+      // Animate to result area (center-ish)
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const destX = raRect.left + (raRect.width / 2) - 79 + (Math.random() * 20 - 10);
+        const destY = raRect.top + 20;
+        fly.style.left = destX + 'px';
+        fly.style.top  = destY + 'px';
+        fly.style.opacity = '0';
+      }));
+
+      // After flight, remove fly card and place real flip card
+      setTimeout(() => {
+        fly.remove();
+        insertFlipCard(card, i, ra);
+
+        // Re-enable buttons after last card
+        if (i === total - 1) {
+          setTimeout(() => {
+            document.querySelectorAll('.pull-btn, .free-btn').forEach(b => b.disabled = false);
+            // Add result note
+            const newCards = pulled.filter(c => gallery[c.id] === 1);
+            const note = document.createElement('p');
+            note.className = 'result-note';
+            note.textContent = newCards.length
+              ? newCards.length + ' new card' + (newCards.length > 1 ? 's' : '') + ' added to gallery'
+              : 'All duplicates';
+            ra.appendChild(note);
+          }, (total * delay) + 600);
+        }
+      }, flyDuration);
+
+    }, i * delay);
+  });
+}
+
+function insertFlipCard(card, i, ra) {
+  // Ensure result-cards container exists
+  let container = ra.querySelector('.result-cards');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'result-cards';
+    ra.appendChild(container);
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `
+    <div class="flip-card" onclick="openModal('${card.id}')" title="Click to view details" style="--rarity-glow:${RARITY_GLOW[card.rarity]}">
+      <div class="flip-card-inner" id="fc-${i}">
+        <div class="flip-card-front">
+          <div class="card r${card.rarity}" style="width:100%;height:100%;border-radius:10px;overflow:hidden;position:relative;">
+            ${cardImgWrap(card)}
+            <span class="rarity-badge">${RARITY_STARS[card.rarity]}</span>
+            ${gallery[card.id] === 1 ? `<span class="new-badge">NEW</span>` : ''}
+            <div class="rarity-bar"></div>
+            <div class="card-footer">
+              <div class="card-name" style="font-size:13px">${card.name}</div>
+              <div class="card-sub" style="font-size:11px">${card.cls}</div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card-back">
+          <img src="${IMG_FOLDER}c-back${IMG_EXT}" alt="Card back" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+          <div class="flip-card-back-fallback">
+            <div class="flip-card-back-emblem">✦</div>
+            <div class="flip-card-back-label">Tap to reveal</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(wrapper.firstElementChild);
+
+  // Flip after a short pause
+  setTimeout(() => {
+    const el = document.getElementById('fc-' + i);
+    if (el) el.classList.add('flipped');
+  }, 80);
 }
 
 function addGems() {
@@ -929,13 +1143,13 @@ function updateCounts() {
   document.getElementById('gallery-tab-count').textContent = owned || '';
 }
 
-function showResults(pulled) {
-  const newCards = pulled.filter(c => gallery[c.id] === 1);
-  const html = pulled.map(c => cardEl(c, { isNew: gallery[c.id] === 1 })).join('');
-  document.getElementById('result-area').innerHTML =
-    `<div class="result-cards">${html}</div>
-     <p class="result-note">${newCards.length ? newCards.length + ' new card' + (newCards.length > 1 ? 's' : '') + ' added to gallery' : 'All duplicates'}</p>`;
-}
+const RARITY_GLOW = {
+  1: 'rgba(107,114,128,0.4)',
+  2: 'rgba(59,130,246,0.5)',
+  3: 'rgba(168,85,247,0.6)',
+  4: 'rgba(245,158,11,0.7)',
+  5: 'rgba(255,255,255,0.6)',
+};
 
 function showTab(t) {
   document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', ['pull','pool','gallery'][i] === t));
