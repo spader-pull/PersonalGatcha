@@ -642,6 +642,30 @@
 
   .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
 
+  .card-section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.5rem 0 1rem;
+  }
+
+  .card-section-divider::before,
+  .card-section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  .card-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gem);
+    white-space: nowrap;
+  }
+
   @keyframes floatIn {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: none; }
@@ -846,7 +870,7 @@
       <span class="section-info">All <strong id="pool-total"></strong> cards · hover for drop rate</span>
       <div class="filter-row" id="pool-filters"></div>
     </div>
-    <div class="cards-grid" id="pool-grid"></div>
+    <div id="pool-grid"></div>
   </div>
 
   <!-- Gallery Panel -->
@@ -873,6 +897,10 @@
       c2.png
       ...
       c36.jpeg
+      b1.jpeg
+      b2.jpeg
+      b3.jpeg
+      b4.jpeg
 */
 
 const IMG_EXT = '.jpeg';
@@ -917,6 +945,15 @@ const CARDS = [
   { id:'c36', name:'Void Eternal, Noctivara',             cls:'Goddess of Darkness', rarity:5, icon:'🌌',  rate:0.001 },
 ];
 
+const CARDS_B = [
+  { id:'b1', name:'Corsair Marguerite',  cls:'Pirate',       rarity:3, icon:'🏴‍☠️', rate:0.04  },
+  { id:'b2', name:'Shadow Veil Yuki',    cls:'Ninja',        rarity:3, icon:'🥷',   rate:0.04  },
+  { id:'b3', name:'Velvet Sin Lilura',   cls:'Succubus',     rarity:3, icon:'😈',   rate:0.04  },
+  { id:'b4', name:'Little Imp Nyx',      cls:'Jr. Succubus', rarity:2, icon:'🍭',   rate:0.11  },
+];
+
+const ALL_CARDS = [...CARDS, ...CARDS_B];
+
 const RARITY_STARS = { 1:'✦', 2:'✦✦', 3:'✦✦✦', 4:'✦✦✦✦', 5:'✦✦✦✦✦' };
 
 const RARITY_BAR_STYLE = {
@@ -928,7 +965,7 @@ const RARITY_BAR_STYLE = {
 };
 
 function openModal(cardId) {
-  const card = CARDS.find(c => c.id === cardId);
+  const card = ALL_CARDS.find(c => c.id === cardId);
   if (!card) return;
   const r = card.rarity;
 
@@ -991,16 +1028,16 @@ function weightedPull() {
   pity++;
   if (pity >= 90) {
     pity = 0;
-    const pool = CARDS.filter(c => c.rarity === 4);
+    const pool = ALL_CARDS.filter(c => c.rarity === 4);
     return pool[Math.floor(Math.random() * pool.length)];
   }
   const roll = Math.random();
   let pool;
-  if      (roll < 0.002) pool = CARDS.filter(c => c.rarity === 5);
-  else if (roll < 0.016) pool = CARDS.filter(c => c.rarity === 4);
-  else if (roll < 0.08)  pool = CARDS.filter(c => c.rarity === 3);
-  else if (roll < 0.35)  pool = CARDS.filter(c => c.rarity === 2);
-  else                   pool = CARDS.filter(c => c.rarity === 1);
+  if      (roll < 0.002) pool = ALL_CARDS.filter(c => c.rarity === 5);
+  else if (roll < 0.016) pool = ALL_CARDS.filter(c => c.rarity === 4);
+  else if (roll < 0.08)  pool = ALL_CARDS.filter(c => c.rarity === 3);
+  else if (roll < 0.35)  pool = ALL_CARDS.filter(c => c.rarity === 2);
+  else                   pool = ALL_CARDS.filter(c => c.rarity === 1);
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -1139,7 +1176,7 @@ function updatePity() {
 
 function updateCounts() {
   const owned = Object.keys(gallery).length;
-  document.getElementById('pool-tab-count').textContent = CARDS.length;
+  document.getElementById('pool-tab-count').textContent = ALL_CARDS.length;
   document.getElementById('gallery-tab-count').textContent = owned || '';
 }
 
@@ -1168,11 +1205,21 @@ function buildFilters(containerId, current, setter) {
 }
 
 function renderPool() {
-  document.getElementById('pool-total').textContent = CARDS.length;
+  document.getElementById('pool-total').textContent = ALL_CARDS.length;
   buildFilters('pool-filters', poolFilter, 'setPoolFilter');
-  const filtered = poolFilter === 'all' ? CARDS : CARDS.filter(c => c.rarity == poolFilter);
+
+  const filteredC = (poolFilter === 'all' ? CARDS : CARDS.filter(c => c.rarity == poolFilter));
+  const filteredB = (poolFilter === 'all' ? CARDS_B : CARDS_B.filter(c => c.rarity == poolFilter));
+
+  const sectionB = filteredB.length ? `
+    <div class="card-section-divider">
+      <span class="card-section-label">Special</span>
+    </div>
+    <div class="cards-grid">${filteredB.map(c => cardEl(c, { showRate: true, ownedCheck: !!gallery[c.id] })).join('')}</div>` : '';
+
   document.getElementById('pool-grid').innerHTML =
-    filtered.map(c => cardEl(c, { showRate: true, ownedCheck: !!gallery[c.id] })).join('');
+    `<div class="cards-grid">${filteredC.map(c => cardEl(c, { showRate: true, ownedCheck: !!gallery[c.id] })).join('')}</div>
+     ${sectionB}`;
 }
 
 function setPoolFilter(f) {
@@ -1181,17 +1228,31 @@ function setPoolFilter(f) {
 }
 
 function renderGallery() {
-  const owned = CARDS.filter(c => gallery[c.id]);
+  const ownedC = CARDS.filter(c => gallery[c.id]);
+  const ownedB = CARDS_B.filter(c => gallery[c.id]);
+  const owned = [...ownedC, ...ownedB];
+
   buildFilters('gallery-filters', galleryFilter, 'setGalleryFilter');
-  const filtered = galleryFilter === 'all' ? owned : owned.filter(c => c.rarity == galleryFilter);
+
+  const filteredC = galleryFilter === 'all' ? ownedC : ownedC.filter(c => c.rarity == galleryFilter);
+  const filteredB = galleryFilter === 'all' ? ownedB : ownedB.filter(c => c.rarity == galleryFilter);
+
   const gc = document.getElementById('gallery-content');
   if (!owned.length) {
     gc.innerHTML = `<div class="empty-state"><div class="icon">🃏</div>No cards yet — start pulling!</div>`;
   } else {
-    gc.innerHTML = `<div class="cards-grid">${filtered.map(c => cardEl(c, { count: gallery[c.id] })).join('')}</div>`;
+    const sectionB = filteredB.length ? `
+      <div class="card-section-divider">
+        <span class="card-section-label">Special</span>
+      </div>
+      <div class="cards-grid">${filteredB.map(c => cardEl(c, { count: gallery[c.id] })).join('')}</div>` : '';
+
+    gc.innerHTML =
+      `<div class="cards-grid">${filteredC.map(c => cardEl(c, { count: gallery[c.id] })).join('')}</div>
+       ${sectionB}`;
   }
   document.getElementById('gallery-info').textContent =
-    owned.length ? `${owned.length} of ${CARDS.length} cards collected` : 'Cards you\'ve collected';
+    owned.length ? `${owned.length} of ${ALL_CARDS.length} cards collected` : 'Cards you\'ve collected';
 }
 
 updateCounts();
